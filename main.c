@@ -15,91 +15,101 @@
 #include "nuklear.h"
 #include "nuklear_glfw_gl3.h"
 
+static void error_callback(int e, const char *d) {
+  printf("Error %d: %s\n", e, d);
+}
 
-static void error_callback(int e, const char *d)
-{printf("Error %d: %s\n", e, d);}
+int main(void) {
+  /* Platform */
+  int win_width = 400;
+  int win_height = 450;
 
-int main(void)
-{
-    /* Platform */
-    int win_width = 400;
-    int win_height = 450;
+  /* GLFW */
+  struct nk_glfw glfw = {0};
+  static GLFWwindow *win;
+  glfwSetErrorCallback(error_callback);
+  if (!glfwInit()) {
+    fprintf(stdout, "[GFLW] failed to init!\n");
+    exit(1);
+  }
 
-    /* GLFW */
-    struct nk_glfw glfw = {0};
-    static GLFWwindow *win;
-    glfwSetErrorCallback(error_callback);
-    if (!glfwInit()) 
-    {fprintf(stdout, "[GFLW] failed to init!\n");exit(1);}
-    
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    win = glfwCreateWindow(win_width, win_height, "Dictionary", NULL, NULL);
-    glfwMakeContextCurrent(win);
+  win = glfwCreateWindow(win_width, win_height, "Dictionary", NULL, NULL);
+  glfwMakeContextCurrent(win);
 
-    /* Glew */
-    glewExperimental = 1;
-    if (glewInit() != GLEW_OK) 
-    {fprintf(stderr, "Failed to setup GLEW\n");exit(1);}
+  /* Glew */
+  glewExperimental = 1;
+  if (glewInit() != GLEW_OK) {
+    fprintf(stderr, "Failed to setup GLEW\n");
+    exit(1);
+  }
 
-	/* create context */
-    struct nk_context *ctx = nk_glfw3_init(&glfw, win, NK_GLFW3_INSTALL_CALLBACKS);
+  /* create context */
+  struct nk_context *ctx =
+      nk_glfw3_init(&glfw, win, NK_GLFW3_INSTALL_CALLBACKS);
 
-    {struct nk_font_atlas *atlas;
+  {
+    struct nk_font_atlas *atlas;
     nk_glfw3_font_stash_begin(&glfw, &atlas);
-    nk_glfw3_font_stash_end(&glfw);}
-    
-    char buf[256] = {0};
-    static const char *languages[] = {"English", "Bulgarian", "Spanish", "French", "German", "Italian", "Russian", "Chinese", "Japanese", "Korean"};
-    static int currentFromLang = 0;
-    static int currentToLang = 1;
-    static const float singleElementRatio[] = {0.2f, 0.6f, 0.2f};
-    static const float tripleElementRatio[] = {0.1f, 0.6f, 0.3f};
+    nk_glfw3_font_stash_end(&glfw);
+  }
 
-    while (!glfwWindowShouldClose(win))
-    {
-        /* Input */
-        glfwPollEvents();
-        nk_glfw3_new_frame(&glfw);
+  char buf[256] = {0};
+  static const char *languages[] = {
+      "English", "Bulgarian", "Spanish", "French",   "German",
+      "Italian", "Russian",   "Chinese", "Japanese", "Korean"};
+  static int currentFromLang = 0;
+  static int currentToLang = 1;
+  static const float singleElementRatio[] = {0.2f, 0.6f, 0.2f};
+  static const float tripleElementRatio[] = {0.1f, 0.6f, 0.3f};
 
-        /* GUI */
-        if (nk_begin(ctx, "Dictionary", nk_rect(0, 0, win_width, win_height), 0))
-        {
-            nk_layout_row_dynamic(ctx, 60, 1);
-            nk_label(ctx, "Dictionary", NK_TEXT_CENTERED);
-            
-              nk_layout_row(ctx, NK_DYNAMIC, 30, 4, tripleElementRatio);
-              nk_label(ctx, "Input:", NK_TEXT_LEFT);
-              nk_edit_string_zero_terminated (ctx, NK_EDIT_FIELD, buf, sizeof(buf) - 1, nk_filter_default);
-              nk_combobox(ctx, languages, NK_LEN(languages), &currentFromLang, 25, nk_vec2(200, 200));
-              nk_spacing(ctx, 1);
-            
-              nk_layout_row(ctx, NK_DYNAMIC, 30, 3, singleElementRatio);
-              nk_spacing(ctx, 1);
-              if (nk_button_label(ctx, "Translate"))
-                printf("%s\n", buf);
-              nk_spacing(ctx, 1);
+  while (!glfwWindowShouldClose(win)) {
+    /* Input */
+    glfwPollEvents();
+    nk_glfw3_new_frame(&glfw);
 
-              nk_layout_row(ctx, NK_DYNAMIC, 30, 3, tripleElementRatio);
-              nk_label(ctx, "Output:", NK_TEXT_LEFT);
-              nk_edit_string_zero_terminated (ctx, NK_EDIT_FIELD, buf, sizeof(buf) - 1, nk_filter_default);
-              nk_combobox(ctx, languages, NK_LEN(languages), &currentToLang, 25, nk_vec2(200, 200));
+    /* GUI */
+    if (nk_begin(ctx, "Dictionary", nk_rect(0, 0, win_width, win_height), 0)) {
+      nk_layout_row_dynamic(ctx, 60, 1);
+      nk_label(ctx, "Dictionary", NK_TEXT_CENTERED);
 
-        }
-        nk_end(ctx);
+      nk_layout_row(ctx, NK_DYNAMIC, 30, 4, tripleElementRatio);
+      nk_label(ctx, "Input:", NK_TEXT_LEFT);
+      nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, buf, sizeof(buf) - 1,
+                                     nk_filter_default);
+      nk_combobox(ctx, languages, NK_LEN(languages), &currentFromLang, 25,
+                  nk_vec2(200, 200));
+      nk_spacing(ctx, 1);
 
-        /* Draw */
-        glViewport(0, 0, win_width, win_height);
-        glClear(GL_COLOR_BUFFER_BIT);
-        nk_glfw3_render(&glfw, NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
-        glfwSwapBuffers(win);
+      nk_layout_row(ctx, NK_DYNAMIC, 30, 3, singleElementRatio);
+      nk_spacing(ctx, 1);
+      if (nk_button_label(ctx, "Translate"))
+        printf("%s\n", buf);
+      nk_spacing(ctx, 1);
+
+      nk_layout_row(ctx, NK_DYNAMIC, 30, 3, tripleElementRatio);
+      nk_label(ctx, "Output:", NK_TEXT_LEFT);
+      nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, buf, sizeof(buf) - 1,
+                                     nk_filter_default);
+      nk_combobox(ctx, languages, NK_LEN(languages), &currentToLang, 25,
+                  nk_vec2(200, 200));
     }
-    nk_glfw3_shutdown(&glfw);
-    glfwTerminate();
-    return 0;
+    nk_end(ctx);
+
+    /* Draw */
+    glViewport(0, 0, win_width, win_height);
+    glClear(GL_COLOR_BUFFER_BIT);
+    nk_glfw3_render(&glfw, NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER,
+                    MAX_ELEMENT_BUFFER);
+    glfwSwapBuffers(win);
+  }
+  nk_glfw3_shutdown(&glfw);
+  glfwTerminate();
+  return 0;
 }
