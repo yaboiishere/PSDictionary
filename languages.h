@@ -1,9 +1,9 @@
-struct Language {
+typedef struct Language {
   char code[10];
   char name[50];
-};
+} language;
 
-struct Languages {
-  Language *languages;
+typedef struct Languages {
+  language *languages;
   int count;
-};
+} languages;
