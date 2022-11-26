@@ -12,14 +12,22 @@
 #define NK_IMPLEMENTATION
 #define NK_GLFW_GL3_IMPLEMENTATION
 #define NK_KEYSTATE_BASED_INPUT
-#include "nuklear.h"
-#include "nuklear_glfw_gl3.h"
+#include "deps/nuklear.h"
+#include "deps/nuklear_glfw_gl3.h"
+#include <dotenv.h>
 
 static void error_callback(int e, const char *d) {
   printf("Error %d: %s\n", e, d);
 }
 
 int main(void) {
+  env_load(".", false);
+  char *api_key = getenv("API_KEY");
+  if (api_key == NULL) {
+    printf("API_KEY is missing from .env file");
+    return 1;
+  }
+
   /* Platform */
   int win_width = 400;
   int win_height = 450;

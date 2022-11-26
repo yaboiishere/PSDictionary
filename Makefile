@@ -4,6 +4,10 @@ BIN = dictionary
 # Flags
 CFLAGS += -std=c99 -pedantic -O2
 
+JSON_C_DIR=./deps/json-c/json-c-build
+CFLAGS += -I$(JSON_C_DIR)/include/json-c
+LDFLAGS+= -L$(JSON_C_DIR)/lib -ljson-c
+
 SRC = main.c
 OBJ = $(SRC:.c=.o)
 
@@ -23,4 +27,4 @@ endif
 $(BIN):
 	@mkdir -p bin
 	rm -f bin/$(BIN) $(OBJS)
-	$(CC) $(SRC) $(CFLAGS) -o bin/$(BIN) $(LIBS)
+	$(CC) $(SRC) $(CFLAGS) -o bin/$(BIN) $(LIBS) -lcurl -ldotenv -ljson-c
