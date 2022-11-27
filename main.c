@@ -14,6 +14,7 @@
 #define NK_KEYSTATE_BASED_INPUT
 #include "deps/nuklear.h"
 #include "deps/nuklear_glfw_gl3.h"
+#include "translationApi.h"
 #include <dotenv.h>
 
 static void error_callback(int e, const char *d) {
@@ -69,9 +70,11 @@ int main(void) {
   }
 
   char buf[256] = {0};
-  static const char *languages[] = {
-      "English", "Bulgarian", "Spanish", "French",   "German",
-      "Italian", "Russian",   "Chinese", "Japanese", "Korean"};
+  languages languages = get_languages_list(api_key);
+  char *languages_names[languages.count];
+  for (int i = 0; i < languages.count; i++) {
+    languages_names[i] = languages.languages[i].name;
+  }
   static int currentFromLang = 0;
   static int currentToLang = 1;
   static const float singleElementRatio[] = {0.2f, 0.6f, 0.2f};
@@ -91,21 +94,22 @@ int main(void) {
       nk_label(ctx, "Input:", NK_TEXT_LEFT);
       nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, buf, sizeof(buf) - 1,
                                      nk_filter_default);
-      nk_combobox(ctx, languages, NK_LEN(languages), &currentFromLang, 25,
+      nk_combobox(ctx, languages_names, languages.count, &currentFromLang, 25,
                   nk_vec2(200, 200));
       nk_spacing(ctx, 1);
 
       nk_layout_row(ctx, NK_DYNAMIC, 30, 3, singleElementRatio);
       nk_spacing(ctx, 1);
-      if (nk_button_label(ctx, "Translate"))
+      if (nk_button_label(ctx, "Translate")) {
         printf("%s\n", buf);
+      }
       nk_spacing(ctx, 1);
 
       nk_layout_row(ctx, NK_DYNAMIC, 30, 3, tripleElementRatio);
       nk_label(ctx, "Output:", NK_TEXT_LEFT);
       nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, buf, sizeof(buf) - 1,
                                      nk_filter_default);
-      nk_combobox(ctx, languages, NK_LEN(languages), &currentToLang, 25,
+      nk_combobox(ctx, languages_names, languages.count, &currentToLang, 25,
                   nk_vec2(200, 200));
     }
     nk_end(ctx);

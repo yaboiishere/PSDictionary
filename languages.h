@@ -1,6 +1,6 @@
 typedef struct Language {
-  char code[10];
-  char name[50];
+  char *code;
+  char *name;
 } language;
 
 typedef struct Languages {

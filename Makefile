@@ -8,7 +8,7 @@ JSON_C_DIR=./deps/json-c/json-c-build
 CFLAGS += -I$(JSON_C_DIR)/include/json-c
 LDFLAGS+= -L$(JSON_C_DIR)/lib -ljson-c
 
-SRC = main.c
+SRC = httpHelpers.c translationApi.c main.c
 OBJ = $(SRC:.c=.o)
 
 ifeq ($(OS),Windows_NT)
