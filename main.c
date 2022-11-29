@@ -70,13 +70,15 @@ int main(void) {
   }
 
   char buf[256] = {0};
-  languages languages = get_languages_list(api_key);
-  char *languages_names[languages.count];
-  for (int i = 0; i < languages.count; i++) {
-    languages_names[i] = languages.languages[i].name;
+  char output[256] = {0};
+  languages *languages = get_languages();
+  char *languages_names[languages->count];
+  for (int i = 0; i < languages->count; i++) {
+    languages_names[i] = languages->languages[i].name;
   }
-  static int currentFromLang = 0;
-  static int currentToLang = 1;
+  selected_language *selected_language = malloc(sizeof(selected_language));
+  selected_language->from = &languages->languages[0];
+  selected_language->to = &languages->languages[1];
   static const float singleElementRatio[] = {0.2f, 0.6f, 0.2f};
   static const float tripleElementRatio[] = {0.1f, 0.6f, 0.3f};
 
@@ -94,23 +96,31 @@ int main(void) {
       nk_label(ctx, "Input:", NK_TEXT_LEFT);
       nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, buf, sizeof(buf) - 1,
                                      nk_filter_default);
-      nk_combobox(ctx, languages_names, languages.count, &currentFromLang, 25,
-                  nk_vec2(200, 200));
+      nk_combobox(ctx, (const char **)languages_names, languages->count,
+                  &selected_language->from->id, 25, nk_vec2(200, 200));
       nk_spacing(ctx, 1);
 
       nk_layout_row(ctx, NK_DYNAMIC, 30, 3, singleElementRatio);
-      nk_spacing(ctx, 1);
+      if (nk_button_label(ctx, "Swap")) {
+        swap_languages(selected_language);
+      }
       if (nk_button_label(ctx, "Translate")) {
-        printf("%s\n", buf);
+        printf("Translate button pressed");
+        const char *lol = translate(api_key, buf, selected_language);
+        printf("Translation: %s", lol);
+        memcpy(output, lol, sizeof(output));
+      }
+      if (nk_button_label(ctx, "Clear")) {
+        memset(buf, 0, sizeof(buf));
       }
       nk_spacing(ctx, 1);
 
       nk_layout_row(ctx, NK_DYNAMIC, 30, 3, tripleElementRatio);
       nk_label(ctx, "Output:", NK_TEXT_LEFT);
-      nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, buf, sizeof(buf) - 1,
-                                     nk_filter_default);
-      nk_combobox(ctx, languages_names, languages.count, &currentToLang, 25,
-                  nk_vec2(200, 200));
+      nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, output,
+                                     sizeof(output) - 1, nk_filter_default);
+      nk_combobox(ctx, (const char **)languages_names, languages->count,
+                  &selected_language->to->id, 25, nk_vec2(200, 200));
     }
     nk_end(ctx);
 

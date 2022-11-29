@@ -5,6 +5,4 @@
 #include <json-c/json_tokener.h>
 #include <stdlib.h>
 
-languages parse_languages_json(char *);
-http_response get_languages(char *);
-languages get_languages_list(char *);
+const char *translate(const char *, const char *, selected_language *);

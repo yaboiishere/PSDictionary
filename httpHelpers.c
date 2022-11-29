@@ -2,7 +2,7 @@
 
 size_t cb(void *data, size_t size, size_t nmemb, void *userp) {
   size_t realsize = size * nmemb;
-  struct http_response *mem = (struct http_response *)userp;
+  http_response *mem = (http_response *)userp;
 
   char *ptr = realloc(mem->response, mem->size + realsize + 1);
   if (ptr == NULL)
