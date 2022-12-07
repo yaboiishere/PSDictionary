@@ -53,16 +53,14 @@ const char *translate(const char *api_auth, const char *raw_test,
         json_object *text;
         json_object_object_get_ex(translation, "text", &text);
         char *resp = (char *) json_object_get_string(text);
-        char *output = calloc(strlen(resp), sizeof(char));
+        char *output = malloc(strlen(resp)* sizeof(char) + 1);
         strcpy(output, resp);
 
-        curl_free(cleaned_text);
         free(post_data);
         free(auth);
         free(chunk.response);
         curl_easy_cleanup(curl);
         return output;
     }
-
     return "Error starting CURL";
 }
