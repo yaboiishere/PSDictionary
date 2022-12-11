@@ -99,9 +99,10 @@ int main(void) {
     for (int i = 0; i < languages->count; i++) {
         languages_names[i] = languages->languages[i].name;
     }
-    selected_language *selected_language = malloc(sizeof(selected_language));
-    selected_language->from = &languages->languages[0];
-    selected_language->to = &languages->languages[1];
+    CURL *curl = curl_easy_init();
+    selected_language selected_language;
+    selected_language.from_id = 0;
+    selected_language.to_id = 1;
     static const float singleElementRatio[] = {0.2f, 0.6f, 0.2f};
     static const float tripleElementRatio[] = {0.1f, 0.6f, 0.3f};
 
@@ -119,22 +120,22 @@ int main(void) {
             nk_label(ctx, "Input:", NK_TEXT_LEFT);
             nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, buffer, 256,
                                            nk_filter_default);
-            nk_combobox(ctx, (const char **) languages_names, languages->count,
-                        &selected_language->from->id, 25, nk_vec2(200, 200));
+            selected_language.from_id = nk_combo(ctx, (const char **) languages_names, languages->count,
+                        selected_language.from_id, 25, nk_vec2(200, 200));
             nk_spacing(ctx, 1);
 
             nk_layout_row(ctx, NK_DYNAMIC, 30, 3, singleElementRatio);
             if (nk_button_label(ctx, "Swap")) {
-                swap_languages(selected_language);
+                swap_languages(&selected_language);
             }
             if (nk_button_label(ctx, "Translate")) {
                 printf("Translate button pressed");
-                const char *tmp = translate(api_key, buffer, selected_language);
+                const char *tmp = translate(curl, api_key, buffer, &selected_language, languages);
                 printf("Translation: %s", tmp);
                 strcpy(output, tmp);
             }
             if (nk_button_label(ctx, "Clear")) {
-                buffer = "";
+                buffer = calloc(256, sizeof(char));
             }
             nk_spacing(ctx, 1);
 
@@ -142,8 +143,8 @@ int main(void) {
             nk_label(ctx, "Output:", NK_TEXT_LEFT);
             nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, output, 256,
                                            nk_filter_ascii);
-            nk_combobox(ctx, (const char **) languages_names, languages->count,
-                        &selected_language->to->id, 25, nk_vec2(200, 200));
+            selected_language.to_id = nk_combo(ctx, (const char **) languages_names, languages->count,
+                        selected_language.to_id, 25, nk_vec2(200, 200));
         }
         nk_end(ctx);
 
@@ -156,7 +157,6 @@ int main(void) {
     }
     free(buffer);
     free(output);
-    free(selected_language);
     nk_glfw3_shutdown(&glfw);
     glfwTerminate();
     return 0;

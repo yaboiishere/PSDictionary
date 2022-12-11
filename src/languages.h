@@ -10,8 +10,8 @@ typedef struct Languages {
 } languages;
 
 typedef struct SelectedLanguage {
-  language *from;
-  language *to;
+  int from_id;
+  int to_id;
 } selected_language;
 
 languages *get_languages();

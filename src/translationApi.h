@@ -5,4 +5,4 @@
 #include "../include/json-c/json_tokener.h"
 #include <stdlib.h>
 
-const char *translate(const char *, const char *, selected_language *);
+const char *translate(CURL *, const char *, const char *, selected_language *, languages *);
