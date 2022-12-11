@@ -9,7 +9,7 @@ project "Dictionary"
     libdirs { "./lib" }
     links { "m", "GLEW", "GL", "glfw", "curl", "json-c", "dotenv" }
 
-    files { "src/**.h", "src/**.c" }
+    files { "lib_src/**.c", "src/**.h", "src/**.c" }
 
     filter "configurations:Debug"
         defines { "DEBUG" }

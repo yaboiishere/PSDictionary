@@ -63,13 +63,17 @@ endif
 GENERATED :=
 OBJECTS :=
 
+GENERATED += $(OBJDIR)/files.o
 GENERATED += $(OBJDIR)/httpHelpers.o
 GENERATED += $(OBJDIR)/languages.o
 GENERATED += $(OBJDIR)/main.o
+GENERATED += $(OBJDIR)/tinyfiledialogs.o
 GENERATED += $(OBJDIR)/translationApi.o
+OBJECTS += $(OBJDIR)/files.o
 OBJECTS += $(OBJDIR)/httpHelpers.o
 OBJECTS += $(OBJDIR)/languages.o
 OBJECTS += $(OBJDIR)/main.o
+OBJECTS += $(OBJDIR)/tinyfiledialogs.o
 OBJECTS += $(OBJDIR)/translationApi.o
 
 # Rules
@@ -134,6 +138,12 @@ endif
 # File Rules
 # #############################################
 
+$(OBJDIR)/tinyfiledialogs.o: lib_src/tinyfiledialogs.c
+	@echo $(notdir $<)
+	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/files.o: src/files.c
+	@echo $(notdir $<)
+	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/httpHelpers.o: src/httpHelpers.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"

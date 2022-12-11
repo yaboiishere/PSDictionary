@@ -1,6 +1,6 @@
 #include "translationApi.h"
 
-const char *translate(CURL * curl, const char *api_auth, const char *raw_test,
+const char *translate(CURL *curl, const char *api_auth, const char *raw_test,
                       selected_language *selected_language, languages *languages) {
     if (curl) {
         char *cleaned_text = curl_escape(raw_test, 0);
@@ -55,7 +55,7 @@ const char *translate(CURL * curl, const char *api_auth, const char *raw_test,
         json_object *text;
         json_object_object_get_ex(translation, "text", &text);
         char *resp = (char *) json_object_get_string(text);
-        char *output = malloc(strlen(resp)* sizeof(char) + 1);
+        char *output = malloc(strlen(resp) * sizeof(char) + 1);
         strcpy(output, resp);
 
         free(post_data);
@@ -63,4 +63,22 @@ const char *translate(CURL * curl, const char *api_auth, const char *raw_test,
         return output;
     }
     return "Error starting CURL";
+}
+
+translation_holder *
+translate_arr(CURL *curl, const char *api_key, file_type file_data, selected_language *selected_language,
+              languages *languages) {
+    translation_holder *output = malloc(sizeof(translation_holder) * file_data.line_count);
+    for (int i = 0; i < file_data.line_count; i++) {
+        output[i].translation = translate(curl, api_key, file_data.lines[i], selected_language, languages);
+    }
+    return output;
+}
+
+file_type convert_to_file_type(translation_holder* holders, int size){
+    char** lines = malloc(sizeof(char*) * size);
+    for(int i = 0; i < size; i++){
+        lines[i] = holders[i].translation;
+    }
+    return (file_type){.lines = lines, .line_count = size};
 }

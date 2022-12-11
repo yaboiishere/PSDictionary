@@ -18,6 +18,9 @@
 #include "translationApi.h"
 #include "../include/dotenv.h"
 #include <locale.h>
+#include "files.h"
+#include "../include/tinyfiledialogs.h"
+#include <stdlib.h>
 
 static void error_callback(int e, const char *d) {
     printf("Error %d: %s\n", e, d);
@@ -103,8 +106,14 @@ int main(void) {
     selected_language selected_language;
     selected_language.from_id = 0;
     selected_language.to_id = 1;
-    static const float singleElementRatio[] = {0.2f, 0.6f, 0.2f};
-    static const float tripleElementRatio[] = {0.1f, 0.6f, 0.3f};
+    static const float single_element_ratio[] = {0.2f, 0.6f, 0.2f};
+    static const float triple_element_ratio[] = {0.1f, 0.6f, 0.3f};
+    static const float two_to_one_ratio[] = {0.7f, 0.3f};
+
+    char *input_dir_buffer = calloc(256, sizeof(char));
+
+    char const * filter_patterns[2] = { "*.txt", "*.text" };
+
 
     while (!glfwWindowShouldClose(win)) {
         /* Input */
@@ -116,7 +125,7 @@ int main(void) {
             nk_layout_row_dynamic(ctx, 60, 1);
             nk_label(ctx, "Dictionary", NK_TEXT_CENTERED);
 
-            nk_layout_row(ctx, NK_DYNAMIC, 30, 4, tripleElementRatio);
+            nk_layout_row(ctx, NK_DYNAMIC, 30, 4, triple_element_ratio);
             nk_label(ctx, "Input:", NK_TEXT_LEFT);
             nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, buffer, 256,
                                            nk_filter_default);
@@ -124,7 +133,7 @@ int main(void) {
                         selected_language.from_id, 25, nk_vec2(200, 200));
             nk_spacing(ctx, 1);
 
-            nk_layout_row(ctx, NK_DYNAMIC, 30, 3, singleElementRatio);
+            nk_layout_row(ctx, NK_DYNAMIC, 30, 3, single_element_ratio);
             if (nk_button_label(ctx, "Swap")) {
                 swap_languages(&selected_language);
             }
@@ -139,12 +148,58 @@ int main(void) {
             }
             nk_spacing(ctx, 1);
 
-            nk_layout_row(ctx, NK_DYNAMIC, 30, 3, tripleElementRatio);
+            nk_layout_row(ctx, NK_DYNAMIC, 30, 3, triple_element_ratio);
             nk_label(ctx, "Output:", NK_TEXT_LEFT);
             nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, output, 256,
                                            nk_filter_ascii);
             selected_language.to_id = nk_combo(ctx, (const char **) languages_names, languages->count,
                         selected_language.to_id, 25, nk_vec2(200, 200));
+            nk_spacing(ctx, 1);
+
+            nk_layout_row(ctx, NK_DYNAMIC, 30, 2, two_to_one_ratio);
+            nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, input_dir_buffer, 256, nk_filter_ascii);
+            if(nk_button_label(ctx, "Select input file")){
+                printf("Select input file button pressed");
+                char *tmp = tinyfd_openFileDialog(
+                        "Select input file",
+                        "",
+                        2,
+                        filter_patterns,
+                        "text files",
+                        0);
+
+                printf("Selected file: %s", tmp);
+                strcpy(input_dir_buffer, tmp);
+            }
+
+            if(nk_button_label(ctx, "Translate File in Directory")) {
+                printf("Translate File in Directory button pressed");
+                if(strlen(input_dir_buffer) == 0){
+                    printf("No input file selected");
+                    tinyfd_notifyPopup("Hello World", "graphic dialogs [Yes] / console mode [No]", "error");
+                } else {
+                    file_type file_data = read_file(input_dir_buffer);
+                    translation_holder *translations = translate_arr(curl, api_key, file_data, &selected_language, languages);
+                    char *output_dir = tinyfd_saveFileDialog(
+                            "Select output file location",
+                            "output.txt",
+                            2,
+                            filter_patterns,
+                            NULL);
+
+                    write_file(output_dir, convert_to_file_type(translations, file_data.line_count).lines, file_data.line_count);
+                    char* message = calloc(512, sizeof(char));
+                    char* line_count = calloc(10, sizeof(char));
+                    sprintf(line_count, "%d", file_data.line_count);
+                    strcat(message, "File translated and saved to:\n");
+                    strcat(message, output_dir);
+                    strcat(message, "\nTranslated: ");
+                    strcat(message, line_count);
+                    strcat(message, " lines");
+                    tinyfd_messageBox("PSDictionary", message, "ok", "info", 0);
+                }
+            }
+
         }
         nk_end(ctx);
 
